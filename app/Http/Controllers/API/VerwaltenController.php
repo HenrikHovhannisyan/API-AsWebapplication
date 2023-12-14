@@ -63,27 +63,29 @@ class VerwaltenController extends Controller
      * Display the specified resource.
      *
      * @param verwalten $verwalten
-     * @return void
+     * @return JsonResponse
      */
     public function show(verwalten $verwalten)
     {
-        //
+        $punktePercentage = ($verwalten->punkte / 50000) * 100;
+
+        return response()->json([
+            "user_id" => $verwalten->user_id,
+            "stufe" => $verwalten->stufe,
+            "punkte" => $verwalten->punkte,
+            'punkte_percentage' => $punktePercentage,
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
      * @param verwalten $verwalten
-     * @return JsonResponse
+     * @return void
      */
     public function edit(verwalten $verwalten)
     {
-        $punktePercentage = ($verwalten->punkte / 50000) * 100;
 
-        return response()->json([
-            'verwalten' => $verwalten,
-            'punkte_percentage' => $punktePercentage,
-        ]);
     }
 
     /**
