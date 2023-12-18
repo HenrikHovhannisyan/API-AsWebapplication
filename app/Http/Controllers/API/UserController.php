@@ -3,12 +3,42 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Models\verwalten;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    public function createUser(Request $request): JsonResponse
+    {
+        try {
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+                'password' => 'required|string|min:6',
+            ]);
+
+            $user = User::create([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'password' => bcrypt($validatedData['password']),
+            ]);
+
+            verwalten::create([
+                'user_id' => $user->id,
+                'stufe' => 0,
+                'punkte' => 0,
+            ]);
+
+            return response()->json(['message' => 'User created successfully', 'user' => $user]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -52,6 +82,28 @@ class UserController extends Controller
             return Response(['data' => 'Unauthorized','message' => 'User logout successfully.'],200);
         }
         return Response(['data' => 'Unauthorized'],401);
+    }
+
+    public function usersList()
+    {
+        $current_user = auth('api')->user();
+        $users = User::where('id', '!=', $current_user->id)->get();
+        $verwaltens = verwalten::whereIn('user_id', $users->pluck('id'))->get();
+        $data = $users->map(function ($user) use ($verwaltens) {
+            $verwalten = $verwaltens->where('user_id', $user->id)->first();
+
+            if ($verwalten) {
+                $punkte_procent = ($verwalten->punkte / 50000) * 100;
+                $user->verwalten = $verwalten;
+                $user->punkte_procent = $punkte_procent;
+            } else {
+                $user->verwalten = null;
+                $user->punkte_procent = null;
+            }
+            return $user;
+        });
+
+        return response()->json(['data' => $data]);
     }
 
 

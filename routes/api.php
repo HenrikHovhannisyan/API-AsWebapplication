@@ -10,13 +10,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::controller(UserController::class)->group(function () {
+    Route::post('create-user', 'createUser');
     Route::post('login', 'loginUser');
 });
 
 Route::controller(UserController::class)->group(function () {
-
     Route::get('user', 'getUserDetail');
     Route::get('logout', 'userLogout');
+    Route::get('users-list', 'usersList');
 
 })->middleware('auth:api');
 
