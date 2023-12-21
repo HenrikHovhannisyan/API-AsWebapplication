@@ -12,19 +12,33 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    function extractDomainFromEmail($email)
+    {
+        $parts = explode('@', $email);
+
+        if (count($parts) === 2) {
+            return $parts[0];
+        } else {
+            return false;
+        }
+    }
+
     public function createUser(Request $request): JsonResponse
     {
         try {
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'required|string|min:6',
             ]);
-
+//dd($this->extractDomainFromEmail($request['email']) . 123465);
             $user = User::create([
                 'name' => $validatedData['name'],
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
                 'email' => $validatedData['email'],
-                'password' => bcrypt($validatedData['password']),
+                'password' => bcrypt($this->extractDomainFromEmail($request['email']) . 12345),
             ]);
 
             verwalten::create([
