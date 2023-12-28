@@ -18,6 +18,7 @@ Route::controller(UserController::class)->group(function () {
     Route::get('user', 'getUserDetail');
     Route::get('logout', 'userLogout');
     Route::get('users-list', 'usersList');
+    Route::get('/users/search', 'searchUsers');
 
 })->middleware('auth:api');
 

@@ -120,5 +120,39 @@ class UserController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    /**
+     * Search for users by name or email.
+     */
+    public function searchUsers(Request $request): JsonResponse
+    {
+        try {
+            $keyword = $request->input('keyword');
+
+            $users = User::where('name', 'like', "%$keyword%")
+                ->orWhere('email', 'like', "%$keyword%")
+                ->get();
+
+            $verwaltens = verwalten::whereIn('user_id', $users->pluck('id'))->get();
+
+            $data = $users->map(function ($user) use ($verwaltens) {
+                $verwalten = $verwaltens->where('user_id', $user->id)->first();
+
+                if ($verwalten) {
+                    $punkte_procent = ($verwalten->punkte / 50000) * 100;
+                    $user->verwalten = $verwalten;
+                    $user->punkte_procent = $punkte_procent;
+                } else {
+                    $user->verwalten = null;
+                    $user->punkte_procent = null;
+                }
+                return $user;
+            });
+
+            return response()->json(['data' => $data]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 
 }
