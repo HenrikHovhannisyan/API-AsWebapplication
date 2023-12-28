@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\verwalten;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -39,9 +40,14 @@ class VerwaltenController extends Controller
     public function show(verwalten $verwalten)
     {
         $punktePercentage = ($verwalten->punkte / 50000) * 100;
+        $user = User::where('id', $verwalten->user_id)->first();
 
         return response()->json([
             "user_id" => $verwalten->user_id,
+            "name" => $user->name,
+            "first_name" => $user->first_name,
+            "last_name" => $user->last_name,
+            "email" => $user->email,
             "stufe" => $verwalten->stufe,
             "punkte" => $verwalten->punkte,
             'punkte_percentage' => $punktePercentage,
